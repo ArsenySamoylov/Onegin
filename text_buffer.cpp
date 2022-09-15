@@ -7,7 +7,9 @@
 char* get_text(char *file_direction)
     {
     FILE *text = fopen(file_direction, "r");
-
+    /*
+    printf("\nbuffer pointer %p", text);
+    */
     if (text == NULL)
         {
         printf("File with text wasn't found in %s", file_direction);
@@ -18,7 +20,9 @@ char* get_text(char *file_direction)
 
     struct stat text_data;
     stat(file_direction, &text_data);
-
+    /*
+    printf("file size %d\n",text_data.st_size);
+    */
     if (text_data.st_size < 1)
         {
         printf("File %s is empty\n", file_direction);

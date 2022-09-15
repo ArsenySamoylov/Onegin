@@ -3,8 +3,9 @@
 
 struct text
     {
+    char* buffer;
     struct line *lines_array;
-    int num_of_lns;
+    int num_of_lns;  // without NULL line
     };
 
 
@@ -17,4 +18,5 @@ struct line
 struct text text_to_lines(const char* text);
 
 int cnt_lines(const char* text);
+
 #endif

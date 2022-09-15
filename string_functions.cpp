@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// extra changes for sort algorithm
+// special for printing line strucute (for sort algorithm)
 int custom_puts( const char *s )
     {
     int flag_error = EOF;

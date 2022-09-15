@@ -3,64 +3,83 @@
 #include <stdlib.h>
 
 #include "../headers/text_to_lines.h"
+#include "../headers/line_functions.h"
 
 struct text text_to_lines(const char* text)
     {
     assert(text != NULL);
 
     int num_of_lns= cnt_lines(text);
-    //
+    /*
     printf("Number of lines: %d\n", num_of_lns);
-    //
+    */
     line* lines_array = (line*)calloc(num_of_lns + 1, sizeof(lines_array[0]));
 
     int current_line = 0;
-
-    for(size_t i = 0, ch_cnt = 0; text[i] != '\0'; i++, ch_cnt++)
+    int ch_cnt = 0;
+    size_t i = 0;
+    while( text[i] != '\0')
         {
         if (text[i] == '\n')
             {
-            line l { (char*)(text+i-ch_cnt), ch_cnt } ;
-            //(lines_array[current_line]).line     = (char*)(text+i-ch_cnt)
-            //(lines_array[current_line]).num_of_ch = ch_cnt;
-            lines_array[current_line] = l;
+            /*all symbols and theit adresses
+            printf("\ti=%d, ch_cht=%d, i-chd=%d\n\t",i, ch_cnt, i-ch_cnt);
+            end */
+
+            //line l { (char*)(text+i-ch_cnt), ch_cnt } ;
+            //lines_array[current_line] = l;
+            lines_array[current_line] = { (char*)(text+i-ch_cnt), ch_cnt};
 
             ch_cnt = 0;
             current_line++;
             }
+        else
+            ch_cnt++;
+        /*print all symbols and their adrese's
+         if(text[i] == '\n')
+                printf("s[%d] = '\\n', adress: %p\n",i, text+i);
+            else
+                printf("s[%d] = %c, adress: %p\n",i, text[i], text+i);
+        */
+        i++;
 
+
+        }
+
+    if (current_line < num_of_lns)
+        {
+        //line l { (char*)(text+i-ch_cnt), ch_cnt};
+        lines_array[current_line] = { (char*)(text+i-ch_cnt), ch_cnt};
+       // printf("SYMBOLS: %d", ch_cnt);
+        current_line++;
+        }
+    if (current_line != num_of_lns)
+        {
+        printf("Number of lines doesn't match!\n");
+
+        exit(1);
         }
 
     lines_array[num_of_lns] = { NULL, 0};
-  /*  lines_array[0] = (line*)text;
-    line++;
 
-    size_t i = 0, ch_cnt = 0;
-
-    while (text[i] != '\0')
+    /*PRINT RESULTING ARRAY
+    printf("NUMBER OF LINES: %d\n", num_of_lns);
+    for(int i = 0; i<num_of_lns+1; i++)
         {
-        ch_cnt++;
-        if (text[i] == '\n')
+        line line = lines_array[i];
+
+        if (line.line == NULL && line.num_of_ch == 0)
+            printf("Line %d is NULL and symbols %d\n",i+1, line.num_of_ch);
+        else
             {
-            lines_array[line]= (line*)(text + i + 1);
-            line++;
+            printf("Line %d, symbols %d, point to %p\n",i+1,line.num_of_ch, line.line );
+            putl(&line);
+            //printf("\n");
             }
-        //
-        if(text[i] == '\n')
-            printf("buffer[%d] = '\\n', %-p\n", i, &text[i]);
-        else printf("buffer[%d] = %c, %-p\n", i,text[i], &text[i]);
-        //
-        i++;
-
         }
-    //
-    for(int i = 0; i<num_of_lns; i++)
-        printf("%p pointer to line %d\n", lines_array[i], i+1);
-    //
-    lines_array[line] = NULL;
-    printf("LINE IS: %d\n", line);   */
+      */
 
-    struct text temp {lines_array, num_of_lns};
+    struct text temp {(char*)text, lines_array, num_of_lns};
     return temp;
     }
 
