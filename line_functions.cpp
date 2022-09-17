@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <cctype>
 
-#include "../headers/line_functions.h"
+#include "line_functions.h"
 
 int putl( const struct line* l )
     {
@@ -20,16 +20,36 @@ int putl( const struct line* l )
     return flag_error;
     }
 
-int scmp(const struct line* l1, const struct line* l2, char mode)
+int fputl( const struct line* l, FILE *out )
+    {
+    if (out == NULL)
+        return -1;
+
+    const char* s = l->line;
+
+    int flag_error = EOF;
+    int i = 0;
+
+    while (s[i] != '\0' && s[i] != '\n')
+        flag_error = fputc(s[i++], out);
+
+    flag_error = fputc('\n', out);
+
+    return flag_error;
+    }
+
+int scmp(const struct line* l1, const struct line* l2, const int mode)
     {
     if (l1 == NULL || l2 == NULL)
         return ERROR_NULL_LINE;
 
-    if (mode == 'b')
+    if (mode == STD_MODE)
         {
         char* s1 = skip_unnecessary_smb(l1->line);
         char* s2 = skip_unnecessary_smb(l2->line);
 
+        if (s1[0] == '\n' || s2[0] == '\n')
+            return (s2[0] == '\n') ? FIRST_BIGGER:SECOND_BIGGER;
         int i = 0;
         while ( (s1[i] != '\n' && s1[i] != '\0') && (s2[i] != '\n' && s2[i] != '\0') )
             {
@@ -46,8 +66,26 @@ int scmp(const struct line* l1, const struct line* l2, char mode)
         return SAME;
         }
 
-    if (mode == 'e')
+    if (mode == REVERSE_MODE)
         {
+        char* s1 = l1->line;
+        int len1 = l1->num_of_ch - 1;
+
+        char* s2 = l2->line;
+        int len2 = l2->num_of_ch - 1;
+
+        while( len1 >= 0 && len2 >= 0)
+            {
+            if (tolower(s1[len1]) != tolower(s2[len2]))
+                return (tolower(s1[len1]) - tolower(s2[len2]) < 0) ? FIRST_BIGGER: SECOND_BIGGER;
+
+            len1--;
+            len2--;
+            }
+        if (len1 != len2)
+            return (len1 > len2) ? FIRST_BIGGER:SECOND_BIGGER;
+
+        return SAME;
         }
 
 
@@ -70,6 +108,8 @@ void swap_lines(line* l1, line* l2)
     *l1 = *l2;
     *l2 = temp;
     }
+
+
 /*
 int main()
     {
