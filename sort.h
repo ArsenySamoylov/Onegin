@@ -1,17 +1,30 @@
 #ifndef SORT_ZAEBET
 #define SORT_ZAEBET
 
-#include "../headers/line_functions.h"
-#include "../headers/text_to_lines.h"
-enum status
-    {
-    EMPTY_TEXT = 0,
-    WRONG_MODE = -1,
+#include "line_functions.h"
+#include "text.h"   // + colors
 
-    SUCCESS = 1
+#define SORT(text, mode)    sort_checker(sort(text, mode));
+
+enum sort_mode
+    {
+    BUFFER_MODE   = 0,
+    STD_MODE      = 1,
+    REVERSE_MODE  = -1,
     };
 
-int sort(const struct *text text_to_sort, char* mode);
-int sorting_buble(struct lines* array,int num_of_lns, char mode);
+enum flag_sort
+    {
+    EMPTY_TEXT         = 0,
+    WRONG_SORTING_MODE = -1,
+
+    SORT_SUCCESS  = 1,
+    };
+
+int sort(struct text* text_to_sort, int mode);
+
+int sorting_buble(struct line* array, const int num_of_lns, const int mode);
+
+void sort_checker(int flag);
 
 #endif

@@ -1,40 +1,68 @@
-#include "../headers/sort.h"
+#include <stdio.h>
 
-int sort(const struct text* text_to_sort, char* mode)
+#include "../headers/sort.h"
+#include "../headers/text.h"
+
+int sort(struct text* text_to_sort, int mode)
     {
     if (text_to_sort->lines_array == NULL || text_to_sort->num_of_lns == 0)
         return EMPTY_TEXT;
 
-    char m = mode[0];
-    if ( m != 'b' || m != 'e' )
+    if (mode != STD_MODE && mode != REVERSE_MODE && mode != BUFFER_MODE)
         return WRONG_MODE;
 
-    return sorting_buble(text_to_sort->lines_array, text_to_sort->num_of_lns, m);
+    return  sorting_buble(text_to_sort->lines_array, text_to_sort->num_of_lns, mode);
     }
 
-int sorting_buble(struct lines* array,int num_of_lns, char mode)
+
+int sorting_buble(struct line* array, const int num_of_lns, const int mode)
     {
     if (array == NULL || num_of_lns == 0)
         return EMPTY_TEXT;
 
-    if ( mode != 'b' || mode != 'e' )
-        return WRONG_MODE;
+    if (mode != STD_MODE && mode != REVERSE_MODE && mode != BUFFER_MODE)
+        return WRONG_SORTING_MODE;
 
     for(int x = 0; x < num_of_lns; x++)
         {
-        char* max = array[x].line;
+        line* max = (line*)(array + x);
 
         for(int y = x; y < num_of_lns; y++)
             {
-            char s = array[y].line;
-
-            if( scmp(s, max, mode) == FIRST_BIGGER )
-                swap_lines(aaray + x, array + y);
+            if (scmp(array + y, max, mode) == FIRST_BIGGER)
+                swap_lines(array + x, array + y);
             }
         }
 
-    return SUCCESS;
+    return SORT_SUCCESS;
     }
 
+void sort_checker(int flag)
+    {
+    printf("sort_checker: ");
 
+    HANDLE hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
+    SetConsoleTextAttribute(hconsole, (lt_red << 4) | white);
+
+    switch(flag)
+        {
+        case SORT_SUCCESS:
+            SetConsoleTextAttribute(hconsole, (lt_green << 4) | black);
+            printf("Text was successfully sorted\n");
+            break;
+
+        case EMPTY_TEXT:
+            printf("Text is empty!\n");
+            break;
+
+        case WRONG_SORTING_MODE:
+            printf("Wrong sorting mode\n");
+            break;
+
+        default:
+            printf("Unexpected sorting error\n");
+        }
+
+    SetConsoleTextAttribute(hconsole, (black<<4) | std_cl);
+    }
