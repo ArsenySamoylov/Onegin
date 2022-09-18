@@ -3,10 +3,15 @@
 
 #include <windows.h>
 #include <sys/stat.h>
+#include <stdio.h>
+#include <assert.h>
+#include <stdlib.h>
+#include <string>
 
 #include "line_functions.h"
 
 #define FPUT(text, result_file, mode)    txt_checker(fput_txt(text, result_file, mode));
+#define DIVIDE_IN_LNS(text, buffer)      txt_checker(divide_text_in_lines(&Hamlet, buffer));
 
 struct text
     {
@@ -14,7 +19,6 @@ struct text
     struct line *lines_array; //+ 1 - NULL line
     int num_of_lns;           //without null line
     };
-
 
 struct line
     {
@@ -43,13 +47,17 @@ enum text_err
     EMPTY_BUFFER       = -6,
     DYNAMIC_MEMORY_ERR = -7,
     LINES_UNMATCHING   = -8,
+    WRONG_MODE_TXT     = -9,
     };
+
+#define __DNKFRLV_NOT_IMPLEMENTED__(...)
 
 enum console_colors
     {
     black    = 0,
     blue     = 1,
     green    = 2,
+    __DNKFRLV_NOT_IMPLEMENTED__ (3)
     red      = 4,
     lil      = 5,
     gray     = 8,
@@ -70,5 +78,8 @@ int fput_txt(const struct text* t, const char* file_direction, const int mode);
 void txt_checker(int flag);
 
 int cnt_lines(const char* text);
+
+FILE* create_file(const char* name, int mode, int number);
+
 
 #endif

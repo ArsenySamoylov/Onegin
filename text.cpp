@@ -1,22 +1,25 @@
-#include <stdio.h>
-#include <assert.h>
-#include <stdlib.h>
-
 #include "text.h"
 
 //add checking function
 char* get_text(const char *file_direction)
     {
-    FILE *text = fopen(file_direction, "r");
+    if (file_direction == NULL) return NULL;
+
+    //
+    char* full_direction = (char*)calloc(strlen(file_direction) + 1 + 5, sizeof(full_direction[0]));
+    strcpy(full_direction, "text/");
+    strcat(full_direction, file_direction);
+    //
+    FILE *text = fopen(full_direction, "r");
     if (text == NULL)
         {
-        printf("File with text wasn't found in %s", file_direction);
+        printf("File with text wasn't found in %s\n", full_direction);
 
         fclose(text);
         return NULL;
         }
 
-    struct stat text_data;
+    struct stat text_data = {};
     stat(file_direction, &text_data);
 
     if (text_data.st_size < 1)
@@ -27,9 +30,9 @@ char* get_text(const char *file_direction)
         return NULL;
         }
 
-    char* text_buffer = (char*)calloc(text_data.st_size + 1, sizeof(char));
+    char* text_buffer = (char*) calloc (text_data.st_size + 1, sizeof (char));
 
-    size_t number_of_ch = fread(text_buffer, sizeof(char), text_data.st_size, text);
+    size_t number_of_ch = fread (text_buffer, sizeof(char), text_data.st_size, text);
 
     text_buffer = (char*)realloc(text_buffer, number_of_ch + 1);
     text_buffer[number_of_ch] = '\0';
@@ -61,23 +64,26 @@ int divide_text_in_lines(struct text* text, const char* buffer)
     int symbl_in_line = 0;
     size_t i = 0;
 
-    while( buffer[i] != '\0')
+    while (buffer[i] != '\0')
         {
         if (buffer[i] == '\n')
             {
 
             lines_array[current_line] = { (char*)(buffer + i - symbl_in_line), symbl_in_line};
-
+            //if (current_line < 100)
+                //
+              //  printf("%.10s eol", buffer + i - symbl_in_line);
+                //
             symbl_in_line = 0;
             current_line++;
             }
 
-        if (buffer[i+1] == '\0')
+        else if (buffer[i+1] == '\0')
             {
             lines_array[current_line] = { (char*)(buffer + i + 1 - symbl_in_line), symbl_in_line};
 
-            symbl_in_line = 0;
             current_line++;
+            symbl_in_line = 0;
             }
 
         else
@@ -87,45 +93,47 @@ int divide_text_in_lines(struct text* text, const char* buffer)
 
         }
 
-    /*if (current_line < num_of_lns)
-        {
-        lines_array[current_line] = { (char*)(text+i-ch_cnt), ch_cnt};
-        current_line++;
-        }  */
-
     if (current_line != num_of_lns)
         return LINES_UNMATCHING;
 
     lines_array[num_of_lns] = { NULL, 0};
 
     *text = {buffer, lines_array, num_of_lns};
+
+    /*
+    printf("EOL\n");
+    //
+    //
+    for(int i =0; i<num_of_lns/500;i++)
+        {
+        printf("%.10s EOF\n", (lines_array+i)->line);
+        }
+    */
+
     return TXT_SUCCESS;
     }
 
 
 
+
 int fput_txt(const struct text* t, const char* file_direction, const int mode)
     {
-    if (t == NULL || t->buffer == NULL || t->lines_array == NULL)
-        return ERROR_TEXT;
+    if (t == NULL || t->buffer == NULL || t->lines_array == NULL) return ERROR_TEXT;
+    if (file_direction == NULL)                                   return EMPTY_DIRECTION;
+    if (mode != ORIGINAL && mode != SORTED)                       return WRONG_MODE_TXT;
+    if (t->num_of_lns < 0)                                        return NO_LINES;
 
-    if (file_direction == NULL)
-        return EMPTY_DIRECTION;
+    static int number_of_using_this_function = 0;
 
-    if (t->num_of_lns < 0)
-        return NO_LINES;
 
-    FILE* file = fopen(file_direction, "a");
+    //FILE* file = fopen(file_direction, "a");
+    FILE* file = create_file(file_direction, mode, ++number_of_using_this_function);
 
-    if (file == NULL)
-        {
-        return FILE_ERROR;
-        }
+    if (file == NULL)  return FILE_ERROR;
 
     if (mode == ORIGINAL)
         {
-
-        fputs("\n\n!!! ENGLISH LITERATURE  TEACHERS DON'T WORRY !!!!!!!!!!!!\n",   file);
+        fputs("!!! ENGLISH LITERATURE  TEACHERS DON'T WORRY !!!!!!!!!!!!\n",   file);
         fputs(    "***************** ORIGINAL TEXT *************************\n\n", file);
 
         fputs(t->buffer, file);
@@ -139,7 +147,7 @@ int fput_txt(const struct text* t, const char* file_direction, const int mode)
 
     else if (mode == SORTED)
         {
-        fputs("\n***************** SORTED   TEXT ******************\n",   file);
+        fputs("***************** SORTED   TEXT ******************\n",   file);
         fputs(  "***************** SORTED   TEXT ******************\n\n", file);
 
         line* arr      = t->lines_array;
@@ -147,7 +155,7 @@ int fput_txt(const struct text* t, const char* file_direction, const int mode)
 
         for(int i = 0; i < num_of_lns; i++)
             {
-            if ( (arr+i)->line[0] == '\n' )
+            if ( (arr+i)->line[0] == '\n' || (arr+i)->line[0] == '=' )
                 ;
             else
                 fputl(arr+i, file);
@@ -177,14 +185,17 @@ void txt_checker(int flag)
                 SetConsoleTextAttribute(hconsole, (lt_green << 4) | black);
                 printf("Text successfully divided on lines\n");
                 break;
+
              case ORIGINAL:
                 SetConsoleTextAttribute(hconsole, (lt_green << 4) | lil);
                 printf("Original text successfully was put in resulting file\n");
                 break;
+
              case SORTED:
                 SetConsoleTextAttribute(hconsole, (lt_green << 4) | blue);
                 printf("Sorted text successfully was put in resulting file\n");
                 break;
+
              case ERROR_TEXT:
                 printf("Error within text strcuture\n");
                 break;
@@ -213,6 +224,10 @@ void txt_checker(int flag)
                 printf("Number of lines in buffer and in line array doesn't match\n");
                 break;
 
+            case WRONG_MODE_TXT:
+                printf("Wrong mode\n");
+                break;
+
             case UNEXPECTED_ERR:
             default:
                 printf("Unexpected error occurred while writing in resulting file\n");
@@ -238,4 +253,32 @@ int cnt_lines(const char* text)
         }
 
     return num_of_lns;
+    }
+
+FILE* create_file(const char* name, int mode, int number)
+    {
+    if (name == NULL)                            return NULL;
+    if (mode != ORIGINAL && mode != SORTED)      return NULL;
+
+    if (number < 0 || number >= 10)
+      {
+      printf("UNDER DEVELOPMENT!!!!!!!!!!!!\n");
+      return NULL;
+      }
+
+    int len_of_file_name = strlen(name);
+
+    const char prefix[] = "result/ORGNL_%s";
+
+    char* new_name = (char*)calloc(len_of_file_name + sizeof(prefix) + 32, sizeof(new_name[0]));
+
+    if (mode == ORIGINAL)
+        snprintf(new_name, len_of_file_name + 1, "result/ORGNL_%s",  name);
+
+    if (mode == SORTED)
+        snprintf(new_name, len_of_file_name + 1, "result/SRTD_%d%s", number, name);
+
+    FILE* file = fopen(new_name, "w");
+
+    return file;
     }
