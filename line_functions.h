@@ -1,6 +1,8 @@
 #ifndef LINE_FUNCTIONS
 #define LINE_FUNCTIONS
 
+    #include <assert.h>
+
     #include "text.h"
     #include "sort.h"
 
@@ -23,5 +25,9 @@
     char* skip_unnecessary_smb(const char *s);
 
     void swap_lines(line* l1, line* l2);
+
+    int standard_line_comparartor( const void* ln1, const void* ln2 );
+
+    int reverse_line_comparator  ( const void* ln1, const void* ln2 );
 
 #endif

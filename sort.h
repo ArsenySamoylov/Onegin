@@ -1,6 +1,9 @@
 #ifndef SORT_ZAEBET
 #define SORT_ZAEBET
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "line_functions.h"
 #include "text.h"   // + colors
 
@@ -15,6 +18,9 @@ enum sort_mode
 
 enum flag_sort
     {
+    QUICK_SORT  = 2,
+    BUBBLE_SORT = 3,
+
     EMPTY_TEXT         = 0,
     WRONG_SORTING_MODE = -1,
 
